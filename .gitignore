@@ -6,3 +6,6 @@ venv/
 
 # csv files
 *.csv
+
+__pycache__/
+*.pyc
