@@ -4,7 +4,7 @@ from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
 import lptn
 
-def simulate_random_drive_cycles(number_of_cycles, duration, max_power, t_initial, capacitances, resistances, t_coolant, t_ambient):
+def simulate_random_drive_cycles(number_of_cycles, duration, max_loss, t_initial, capacitances, resistances, t_coolant, t_ambient):
     all_data = []
 
     for cycle in range(1, number_of_cycles + 1):
@@ -19,7 +19,7 @@ def simulate_random_drive_cycles(number_of_cycles, duration, max_power, t_initia
             loads.append(new_load)
         
         # 2. Create Power Interpolation function
-        power_vals = np.array(loads) * max_power
+        power_vals = np.array(loads) * max_loss
         power_func = interp1d(time_points, power_vals, kind='linear')
 
         # 3. Simulate
@@ -62,7 +62,7 @@ t_initial = [25, 25, 25, 25]
 df = simulate_random_drive_cycles(
     number_of_cycles=5, 
     duration=3600, 
-    max_power=50000, 
+    max_loss=1500, 
     t_initial=t_initial, 
     capacitances=capacitances, 
     resistances=resistances, 
