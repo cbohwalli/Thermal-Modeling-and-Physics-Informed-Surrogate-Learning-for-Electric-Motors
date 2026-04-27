@@ -60,8 +60,8 @@ resistances = [3.0, 3.0, 0.3, 0.05, 0.8, 0.8, 0.6]
 t_initial = [25, 25, 25, 25]
 
 df = simulate_random_drive_cycles(
-    number_of_cycles=5, 
-    duration=3600, 
+    number_of_cycles=50, 
+    duration=18000, 
     max_loss=1500, 
     t_initial=t_initial, 
     capacitances=capacitances, 
