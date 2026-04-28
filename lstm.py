@@ -4,6 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
+import matplotlib.pyplot as plt
 
 # Constants
 WINDOW_SIZE = 60 
@@ -31,7 +32,7 @@ val_df = df[df['drive_cycle_number'].isin(val_ids)]
 scaler_input = MinMaxScaler()
 scaler_target = MinMaxScaler()
 
-# Fit on training data only to avoid dataleakage
+# Fit on training data only to avoid data leakage
 scaler_input.fit(train_df[['load']])
 scaler_target.fit(train_df[['t_stator', 't_rotor_1', 't_rotor_2', 't_housing']])
 
@@ -45,7 +46,6 @@ val_y = scaler_target.transform(val_df[['t_stator', 't_rotor_1', 't_rotor_2', 't
 # 3. Cycle-Aware Sequence Generation
 def create_sequences_by_cycle(df_cycles, x_data, y_data, window_size):
     x_seq, y_seq = [], []
-    # We need to iterate cycle by cycle to avoid leakage
     for cycle_id in df_cycles['drive_cycle_number'].unique():
         # Get indices for this cycle
         indices = np.where(df_cycles['drive_cycle_number'] == cycle_id)[0]
@@ -74,11 +74,8 @@ model = Sequential([
     Dense(OUTPUT_TARGETS)
 ])
 
-# Compile the model
 model.compile(optimizer='adam', loss='mse')
 
-
-# Train the model
 history = model.fit(
     X_train, y_train,
     epochs=20,            
@@ -87,25 +84,21 @@ history = model.fit(
     verbose=1
 )
 
-# Predict on test data
 predictions_scaled = model.predict(X_val)
 
 # Convert scaled predictions back to actual temperature values
 predictions = scaler_target.inverse_transform(predictions_scaled)
 
-# visualization of prediction vs ground truth
-import matplotlib.pyplot as plt
-
-# 1. Reverse the scaling for Ground Truth
-# This makes sure the units match your predictions
+# Reverse the scaling for Ground Truth
 ground_truth = scaler_target.inverse_transform(y_val)
 
-# 2. Setup the Plotting Layout
-# We create 4 rows (one for each temperature variable)
+# visualization
+
+# Setup the Plotting Layout
 fig, axes = plt.subplots(4, 1, figsize=(12, 12))
 labels = ['Stator', 'Rotor 1', 'Rotor 2', 'Housing']
 
-# 3. Plot the data
+# Plot the data
 for i in range(4):
     axes[i].plot(ground_truth[:, i], label='Actual', color='blue', alpha=0.6)
     axes[i].plot(predictions[:, i], label='Predicted', color='red', linestyle='--')
@@ -113,13 +106,10 @@ for i in range(4):
     axes[i].legend()
     axes[i].set_ylabel('Temp')
 
-plt.tight_layout() # This keeps the titles from overlapping
+plt.tight_layout()
 plt.savefig('ground_truth_vs_predictions.png')
 print("Plot saved as ground_truth_vs_predictions.png")
 
-# visualization of training curve
-
-# Extract data from the history object
 loss = history.history['loss']
 val_loss = history.history['val_loss']
 epochs = range(1, len(loss) + 1)
