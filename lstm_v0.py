@@ -70,7 +70,6 @@ X_val, y_val = create_sequences_by_cycle(val_df, val_x, val_y, WINDOW_SIZE)
 # Initialize the Sequential model
 model = Sequential([
     LSTM(32, input_shape=(WINDOW_SIZE, INPUT_FEATURES)),
-    
     Dense(OUTPUT_TARGETS)
 ])
 
@@ -107,8 +106,8 @@ for i in range(4):
     axes[i].set_ylabel('Temp')
 
 plt.tight_layout()
-plt.savefig('ground_truth_vs_predictions.png')
-print("Plot saved as ground_truth_vs_predictions.png")
+plt.savefig('ground_truth_vs_predictions_v0.png')
+print("Plot saved as ground_truth_vs_predictions_v0.png")
 
 loss = history.history['loss']
 val_loss = history.history['val_loss']
@@ -124,5 +123,5 @@ plt.xlabel('Epochs')
 plt.ylabel('Loss (Mean Squared Error)')
 plt.legend()
 plt.grid(True)
-plt.savefig('training_loss_curve.png')
-print("Plot saved as training_loss_curve.png")
+plt.savefig('training_loss_curve_v0.png')
+print("Plot saved as training_loss_curve_v0.png")
