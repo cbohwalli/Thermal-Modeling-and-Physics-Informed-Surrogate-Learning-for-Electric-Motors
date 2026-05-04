@@ -44,6 +44,16 @@ train_y = scaler_target.transform(train_df[target_cols])
 val_x = scaler_input.transform(val_df[feature_cols])
 val_y = scaler_target.transform(val_df[target_cols])
 
+# Adding noice
+noise_level = 0.01  # 1% of the normalized range (0 to 1)
+
+# Generate Gaussian noise matching the shape of your target data
+train_noise = np.random.normal(0, noise_level, size=train_y.shape)
+val_noise = np.random.normal(0, noise_level, size=val_y.shape)
+
+# Add the noise to the ground truth
+train_y = train_y + train_noise
+
 # 3. Cycle-Aware Step-Wise Data Generation
 def create_step_pairs_by_cycle(df_cycles, x_data, y_data):
     x_pairs, y_pairs = [], []

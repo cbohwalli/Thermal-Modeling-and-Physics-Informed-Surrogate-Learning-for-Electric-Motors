@@ -1,9 +1,8 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense
 import matplotlib.pyplot as plt
+from tensorflow.keras import layers, models
 
 # Constants
 WINDOW_SIZE = 60 
@@ -45,36 +44,42 @@ train_y = scaler_target.transform(train_df[target_cols])
 val_x = scaler_input.transform(val_df[feature_cols])
 val_y = scaler_target.transform(val_df[target_cols])
 
-# 3. Cycle-Aware Sequence Generation
-def create_sequences_by_cycle(df_cycles, x_data, y_data, window_size):
-    x_seq, y_seq = [], []
+# Adding noice
+noise_level = 0.60  # 60% of the normalized range (0 to 1)
+
+# Generate Gaussian noise matching the shape of your target data
+train_noise = np.random.normal(0, noise_level, size=train_y.shape)
+val_noise = np.random.normal(0, noise_level, size=val_y.shape)
+
+# Add the noise to the ground truth
+train_y = train_y + train_noise
+
+# 3. Cycle-Aware Step-Wise Data Generation
+def create_step_pairs_by_cycle(df_cycles, x_data, y_data):
+    x_pairs, y_pairs = [], []
+    
     for cycle_id in df_cycles['drive_cycle_number'].unique():
-        # Get indices for this cycle
+        # Get indices for this specific cycle
         indices = np.where(df_cycles['drive_cycle_number'] == cycle_id)[0]
-        # Get start/end in the transformed array
         start, end = indices[0], indices[-1] + 1
         
         cycle_x = x_data[start:end]
         cycle_y = y_data[start:end]
         
-        for i in range(len(cycle_x) - window_size):
-            x_seq.append(cycle_x[i : i + window_size])
-            y_seq.append(cycle_y[i + window_size])
+        for i in range(len(cycle_x) - 1): 
+            x_pairs.append(cycle_x[i])      # Current state Features
+            y_pairs.append(cycle_y[i + 1])  # Next state Targets
             
-    return np.array(x_seq), np.array(y_seq)
+    return np.array(x_pairs), np.array(y_pairs)
 
-WINDOW_SIZE = 60
-X_train, y_train = create_sequences_by_cycle(train_df, train_x, train_y, WINDOW_SIZE)
-X_val, y_val = create_sequences_by_cycle(val_df, val_x, val_y, WINDOW_SIZE)
+X_train, y_train = create_step_pairs_by_cycle(train_df, train_x, train_y)
+X_val, y_val = create_step_pairs_by_cycle(val_df, val_x, val_y)
 
-# ------------------------------------------------------------------------
-
-# Initialize the Sequential model
-model = Sequential([
-    LSTM(32, input_shape=(WINDOW_SIZE, INPUT_FEATURES)),
-    
-    Dense(OUTPUT_TARGETS)
-])
+model = models.Sequential([
+        layers.Dense(64, activation='relu'),
+        
+        layers.Dense(OUTPUT_TARGETS)
+    ])
 
 model.compile(optimizer='adam', loss='mse')
 
@@ -86,6 +91,7 @@ history = model.fit(
     verbose=1
 )
 
+
 predictions_scaled = model.predict(X_val)
 
 # Convert scaled predictions back to actual temperature values
@@ -93,6 +99,7 @@ predictions = scaler_target.inverse_transform(predictions_scaled)
 
 # Reverse the scaling for Ground Truth
 ground_truth = scaler_target.inverse_transform(y_val)
+
 
 # visualization
 
@@ -109,8 +116,8 @@ for i in range(4):
     axes[i].set_ylabel('Temp')
 
 plt.tight_layout()
-plt.savefig('ground_truth_vs_predictions_v0.png')
-print("Plot saved as ground_truth_vs_predictions_v0.png")
+plt.savefig('ground_truth_vs_predictions_mlp_v2.png')
+print("Plot saved as ground_truth_vs_predictions_mlp_v2.png")
 
 loss = history.history['loss']
 val_loss = history.history['val_loss']
@@ -126,5 +133,5 @@ plt.xlabel('Epochs')
 plt.ylabel('Loss (Mean Squared Error)')
 plt.legend()
 plt.grid(True)
-plt.savefig('training_loss_curve_v0.png')
-print("Plot saved as training_loss_curve_v0.png")
+plt.savefig('training_loss_curve_mlp_v2.png')
+print("Plot saved as training_loss_curve_mlp_v2.png")
