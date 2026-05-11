@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-def visualisation_results(ground_truth, predictions, history, experiment_number):
+def visualise_results(ground_truth, predictions, history, experiment_number):
 
     # Setup the Plotting Layout
     fig, axes = plt.subplots(4, 1, figsize=(12, 12))
