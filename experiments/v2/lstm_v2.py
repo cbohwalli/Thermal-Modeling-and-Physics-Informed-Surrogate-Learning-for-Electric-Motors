@@ -1,9 +1,8 @@
 import pandas as pd
-import numpy as np
-from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 from src.visualisation.plotting import visualise_results
+from src.data.preprocessing import preprocess_data
 
 # Constants
 WINDOW_SIZE = 60 
@@ -19,53 +18,8 @@ target_cols = ['t_stator', 't_rotor_1', 't_rotor_2', 't_housing']
 # 1. Load Data
 df = pd.read_csv('drive_cycle_dataset.csv')
 
-cycle_ids = df['drive_cycle_number'].unique()
-np.random.shuffle(cycle_ids) 
-
-# Split cycles (80% train, 20% validation)
-split_idx = int(0.8 * len(cycle_ids))
-train_ids = cycle_ids[:split_idx]
-val_ids = cycle_ids[split_idx:]
-
-train_df = df[df['drive_cycle_number'].isin(train_ids)]
-val_df = df[df['drive_cycle_number'].isin(val_ids)]
-
-# 2. Normalization
-scaler_input = MinMaxScaler()
-scaler_target = MinMaxScaler()
-
-# Fit on training data only to avoid data leakage
-scaler_input.fit(train_df[feature_cols])
-scaler_target.fit(train_df[target_cols])
-
-# Transform both
-train_x = scaler_input.transform(train_df[feature_cols])
-train_y = scaler_target.transform(train_df[target_cols])
-
-val_x = scaler_input.transform(val_df[feature_cols])
-val_y = scaler_target.transform(val_df[target_cols])
-
-# 3. Cycle-Aware Sequence Generation
-def create_sequences_by_cycle(df_cycles, x_data, y_data, window_size):
-    x_seq, y_seq = [], []
-    for cycle_id in df_cycles['drive_cycle_number'].unique():
-        # Get indices for this cycle
-        indices = np.where(df_cycles['drive_cycle_number'] == cycle_id)[0]
-        # Get start/end in the transformed array
-        start, end = indices[0], indices[-1] + 1
-        
-        cycle_x = x_data[start:end]
-        cycle_y = y_data[start:end]
-        
-        for i in range(len(cycle_x) - window_size):
-            x_seq.append(cycle_x[i : i + window_size])
-            y_seq.append(cycle_y[i + window_size])
-            
-    return np.array(x_seq), np.array(y_seq)
-
-WINDOW_SIZE = 60
-X_train, y_train = create_sequences_by_cycle(train_df, train_x, train_y, WINDOW_SIZE)
-X_val, y_val = create_sequences_by_cycle(val_df, val_x, val_y, WINDOW_SIZE)
+training_split = 80 # 80% training data 20% validation data
+X_train, y_train, X_val, y_val, scaler_input, scaler_target = preprocess_data(df, training_split, feature_cols, target_cols)
 
 # ------------------------------------------------------------------------
 

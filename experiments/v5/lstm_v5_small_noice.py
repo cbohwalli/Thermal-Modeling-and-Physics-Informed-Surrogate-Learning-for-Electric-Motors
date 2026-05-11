@@ -4,6 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 from src.visualisation.plotting import visualise_results
+from src.data.preprocessing import preprocess_data
 
 # Constants
 WINDOW_SIZE = 60 
@@ -19,31 +20,8 @@ target_cols = ['t_stator', 't_rotor_1', 't_rotor_2', 't_housing']
 # 1. Load Data
 df = pd.read_csv('drive_cycle_dataset.csv')
 
-cycle_ids = df['drive_cycle_number'].unique()
-np.random.shuffle(cycle_ids) 
-
-# Split cycles (80% train, 20% validation)
-split_idx = int(0.8 * len(cycle_ids))
-train_ids = cycle_ids[:split_idx]
-val_ids = cycle_ids[split_idx:]
-
-train_df = df[df['drive_cycle_number'].isin(train_ids)]
-val_df = df[df['drive_cycle_number'].isin(val_ids)]
-
-# 2. Normalization
-scaler_input = MinMaxScaler()
-scaler_target = MinMaxScaler()
-
-# Fit on training data only to avoid data leakage
-scaler_input.fit(train_df[feature_cols])
-scaler_target.fit(train_df[target_cols])
-
-# Transform both
-train_x = scaler_input.transform(train_df[feature_cols])
-train_y = scaler_target.transform(train_df[target_cols])
-
-val_x = scaler_input.transform(val_df[feature_cols])
-val_y = scaler_target.transform(val_df[target_cols])
+training_split = 80 # 80% training data 20% validation data
+train_x, train_y, val_x, val_y, scaler_input, scaler_target = preprocess_data(df, training_split, feature_cols, target_cols)
 
 # Adding noice
 noise_level = 0.01  # 1% of the normalized range (0 to 1)
