@@ -5,7 +5,7 @@ from src.data.preprocessing import add_measurement_noice
 from src.data.preprocessing import create_sequences_by_cycle
 from src.models.build_lstm import build_lstm
 from src.models.train_model import train_model
-
+from src.models.model_evaluation import model_evaluation
 
 # Constants
 WINDOW_SIZE = 60 
@@ -36,13 +36,7 @@ X_val, y_val = create_sequences_by_cycle(df, val_x, val_y, WINDOW_SIZE)
 model = build_lstm(WINDOW_SIZE, INPUT_FEATURES, OUTPUT_TARGETS)
 model, history = train_model(model, (X_train, y_train), (val_x, val_y))
 
-predictions_scaled = model.predict(X_val)
-
-# Convert scaled predictions back to actual temperature values
-predictions = scaler_target.inverse_transform(predictions_scaled)
-
-# Reverse the scaling for Ground Truth
-ground_truth = scaler_target.inverse_transform(y_val)
+predictions, ground_truth = model_evaluation(model, X_val, y_val, scaler_target)
 
 # visualisation
 experiment_number = '5'
