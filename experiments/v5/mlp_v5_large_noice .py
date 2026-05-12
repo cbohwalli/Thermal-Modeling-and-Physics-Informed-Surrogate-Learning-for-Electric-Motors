@@ -21,7 +21,7 @@ target_cols = ['t_stator', 't_rotor_1', 't_rotor_2', 't_housing']
 df = pd.read_csv('drive_cycle_dataset.csv')
 
 # 2. Split and normalize data
-training_split = 80 # 80% training data 20% validation data
+training_split = 0.8 # 80% training data 20% validation data
 train_x, train_y, val_x, val_y, scaler_target = split_and_normalize(df, training_split, feature_cols, target_cols)
 
 # 3. Add measurement noice
