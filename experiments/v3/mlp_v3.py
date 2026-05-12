@@ -1,8 +1,9 @@
 import pandas as pd
-from tensorflow.keras import layers, models
 from src.visualisation.plotting import visualise_results
 from src.data.preprocessing import split_and_normalize
 from src.data.preprocessing import create_sequences_by_cycle
+from src.models.build_mlp import build_mlp
+from src.models.train_model import train_model
 
 # Constants
 WINDOW_SIZE = 60 
@@ -25,24 +26,8 @@ train_x, train_y, val_x, val_y, scaler_target = split_and_normalize(df, training
 X_train, y_train = create_sequences_by_cycle(df, train_x, train_y, WINDOW_SIZE)
 X_val, y_val = create_sequences_by_cycle(df, val_x, val_y, WINDOW_SIZE)
 
-model = models.Sequential([
-        # Flattening the time-series window into a single vector
-        layers.Flatten(input_shape=(WINDOW_SIZE, INPUT_FEATURES)),
-       
-        layers.Dense(64, activation='relu'),
-        
-        layers.Dense(OUTPUT_TARGETS)
-    ])
-
-model.compile(optimizer='adam', loss='mse')
-
-history = model.fit(
-    X_train, y_train,
-    epochs=20,            
-    batch_size=32,        
-    validation_data=(X_val, y_val),
-    verbose=1
-)
+model = build_mlp(WINDOW_SIZE, INPUT_FEATURES, OUTPUT_TARGETS)
+model, history = train_model(model, (X_train, y_train), (val_x, val_y))
 
 
 predictions_scaled = model.predict(X_val)

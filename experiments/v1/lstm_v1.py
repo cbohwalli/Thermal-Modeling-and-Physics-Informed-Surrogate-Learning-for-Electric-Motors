@@ -1,9 +1,9 @@
 import pandas as pd
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense
 from src.visualisation.plotting import visualise_results
 from src.data.preprocessing import split_and_normalize
 from src.data.preprocessing import create_sequences_by_cycle
+from src.models.build_lstm import build_lstm
+from src.models.train_model import train_model
 
 # Constants
 WINDOW_SIZE = 60 
@@ -28,23 +28,10 @@ X_val, y_val = create_sequences_by_cycle(df, val_x, val_y, WINDOW_SIZE)
 
 # ------------------------------------------------------------------------
 
-# Initialize the Sequential model
-model = Sequential([
-    LSTM(32, input_shape=(WINDOW_SIZE, INPUT_FEATURES)),
-    Dense(OUTPUT_TARGETS)
-])
-
-model.compile(optimizer='adam', loss='mse')
-
-history = model.fit(
-    X_train, y_train,
-    epochs=20,            
-    batch_size=32,        
-    validation_data=(X_val, y_val),
-    verbose=1
-)
-
+model = build_lstm(WINDOW_SIZE, INPUT_FEATURES, OUTPUT_TARGETS)
+model, history = train_model(model, (X_train, y_train), (val_x, val_y))
 predictions_scaled = model.predict(X_val)
+
 
 # Convert scaled predictions back to actual temperature values
 predictions = scaler_target.inverse_transform(predictions_scaled)
