@@ -17,7 +17,7 @@ target_cols = ['t_stator', 't_rotor_1', 't_rotor_2', 't_housing']
 # Data preprocessing pipeline
 
 # 1. Load Data
-df = pd.read_csv('drive_cycle_dataset.csv')
+df = pd.read_csv('data/drive_cycle_dataset.csv')
 
 # 2. Split and normalize data
 training_split = 80 # 80% training data 20% validation data

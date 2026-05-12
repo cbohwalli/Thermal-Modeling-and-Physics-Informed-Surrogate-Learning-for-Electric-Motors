@@ -15,7 +15,7 @@ def visualise_results(ground_truth, predictions, history, experiment_number):
         axes[i].set_ylabel('Temp')
 
     plt.tight_layout()
-    plt.savefig(f'ground_truth_vs_predictions_v{experiment_number}.png')
+    plt.savefig(f'results/ground_truth_vs_predictions_v{experiment_number}.png')
     print("Ground truth vs predictions plot saved")
 
     loss = history.history['loss']
@@ -32,5 +32,5 @@ def visualise_results(ground_truth, predictions, history, experiment_number):
     plt.ylabel('Loss (Mean Squared Error)')
     plt.legend()
     plt.grid(True)
-    plt.savefig(f'training_loss_curve_v{experiment_number}.png')
+    plt.savefig(f'results/training_loss_curve_v{experiment_number}.png')
     print("Training loss plot saved")

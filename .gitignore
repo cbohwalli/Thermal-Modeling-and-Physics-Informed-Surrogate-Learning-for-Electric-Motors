@@ -5,7 +5,7 @@ venv/
 *.png
 
 # csv files
-*.csv
+data/*.csv
 
 __pycache__/
 *.pyc

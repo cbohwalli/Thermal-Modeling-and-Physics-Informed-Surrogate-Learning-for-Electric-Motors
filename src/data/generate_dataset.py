@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
-import lptn
+from src.physics.lptn import lptn_system
 
 def simulate_random_drive_cycles(number_of_cycles, duration, max_loss, t_initial, capacitances, resistances, t_coolant, t_ambient):
     all_data = []
@@ -23,7 +23,7 @@ def simulate_random_drive_cycles(number_of_cycles, duration, max_loss, t_initial
         power_func = interp1d(time_points, power_vals, kind='linear')
 
         # 3. Simulate
-        solution = solve_ivp(lptn.lptn_system, (0, duration), t_initial, 
+        solution = solve_ivp(lptn_system, (0, duration), t_initial, 
                              args=(capacitances, resistances, power_func, t_coolant, t_ambient), 
                              method='RK45', t_eval=time_points)
 
@@ -41,8 +41,8 @@ def simulate_random_drive_cycles(number_of_cycles, duration, max_loss, t_initial
             
     # 5. Save to CSV
     df = pd.DataFrame(all_data)
-    df.to_csv('drive_cycle_dataset.csv', index=False)
-    print("Simulation complete. Data saved to 'drive_cycle_dataset.csv'")
+    df.to_csv('data/drive_cycle_dataset.csv', index=False)
+    print("Simulation complete. Data saved as 'drive_cycle_dataset.csv'")
     return df
 
 # --- Parameters Configuration ---
