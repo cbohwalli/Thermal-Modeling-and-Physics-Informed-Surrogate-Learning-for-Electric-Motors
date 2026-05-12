@@ -35,7 +35,7 @@ X_val, y_val = create_sequences_by_cycle(df, val_x, val_y, WINDOW_SIZE)
 # ------------------------------------------------------------------------
 
 model = build_lstm(WINDOW_SIZE, INPUT_FEATURES, OUTPUT_TARGETS)
-model, history = train_model(model, (X_train, y_train), (val_x, val_y))
+model, history = train_model(model, (X_train, y_train), (X_val, y_val))
 
 predictions, ground_truth = model_evaluation(model, X_val, y_val, scaler_target)
 

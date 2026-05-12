@@ -1,6 +1,5 @@
 import pandas as pd
 from src.visualisation.plotting import visualise_results
-from tensorflow.keras import layers, models
 from src.data.preprocessing import split_and_normalize
 from src.data.preprocessing import create_sequences_by_cycle
 from src.models.build_mlp import build_mlp
@@ -30,7 +29,7 @@ X_train, y_train = create_sequences_by_cycle(df, train_x, train_y, WINDOW_SIZE)
 X_val, y_val = create_sequences_by_cycle(df, val_x, val_y, WINDOW_SIZE)
 
 model = build_mlp(WINDOW_SIZE, INPUT_FEATURES, OUTPUT_TARGETS)
-model, history = train_model(model, (X_train, y_train), (val_x, val_y))
+model, history = train_model(model, (X_train, y_train), (X_val, y_val))
 
 predictions, ground_truth = model_evaluation(model, X_val, y_val, scaler_target)
 

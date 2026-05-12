@@ -1,7 +1,6 @@
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
-# 3. Cycle-Aware Sequence Generation
 def create_sequences_by_cycle(df_cycles, x_data, y_data, window_size):
     x_seq, y_seq = [], []
     for cycle_id in df_cycles['drive_cycle_number'].unique():
@@ -21,8 +20,16 @@ def create_sequences_by_cycle(df_cycles, x_data, y_data, window_size):
             for i in range(len(cycle_x) - window_size):
                 x_seq.append(cycle_x[i : i + window_size])
                 y_seq.append(cycle_y[i + window_size])
-            
-    return np.array(x_seq), np.array(y_seq)
+
+    X = np.array(x_seq)
+    Y = np.array(y_seq)
+
+    # If Window=1, X is 2D (Samples, Features). 
+    # We must expand it to 3D (Samples, 1, Features) to match the model.
+    if window_size == 1 and X.ndim == 2:
+        X = np.expand_dims(X, axis=1)
+
+    return X, Y
 
 def split_and_normalize(df, training_split, inputs, outputs):
     cycle_ids = df['drive_cycle_number'].unique()
